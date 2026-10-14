@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { tabIcon } from "@/shell/tabUtils";
 import { isSessionTabType } from "@/shell/tab-registry";
-import { TabConnectionDot } from "@/components/tab-connection-dot";
+
 import { isElectron } from "@/lib/electron";
 import type { Tab, TabType } from "@/types/ui-types";
 import { ActionSlot } from "@/shell/ActionSlot";
@@ -140,6 +140,44 @@ export function TabBar({
   const skipIndicatorAnimRef = useRef(false);
 
   const activeIsSplit = isSplitTab(tabs.find((tab) => tab.id === activeTabId));
+
+  // Connection status polling for session tabs
+  const [connectionStatuses, setConnectionStatuses] = useState<
+    Record<string, "connected" | "disconnected" | "unknown">
+  >({});
+
+  useEffect(() => {
+    const sessionTabs = tabs.filter((tab) => isSessionTabType(tab.type));
+    if (sessionTabs.length === 0) return;
+
+    const check = () => {
+      const updates: Record<string, "connected" | "disconnected" | "unknown"> =
+        {};
+      for (const tab of sessionTabs) {
+        try {
+          const connected = tab.terminalRef?.current?.isConnected?.();
+          updates[tab.id] =
+            typeof connected === "boolean"
+              ? connected
+                ? "connected"
+                : "disconnected"
+              : "unknown";
+        } catch {
+          updates[tab.id] = "unknown";
+        }
+      }
+      setConnectionStatuses((prev) => {
+        const changed = Object.keys(updates).some(
+          (id) => prev[id] !== updates[id],
+        );
+        return changed ? { ...prev, ...updates } : prev;
+      });
+    };
+
+    check();
+    const interval = setInterval(check, 2000);
+    return () => clearInterval(interval);
+  }, [tabs]);
 
   const measureIndicator = useCallback(() => {
     const el = activeTabId ? tabEls.current.get(activeTabId) : null;
@@ -454,11 +492,31 @@ export function TabBar({
                       .length + 1}
                   </span>
                 )}
-                <TabConnectionDot
-                  terminalRef={tab.terminalRef}
-                  tabType={tab.type}
-                />
-                {tabIcon(tab.type)}
+                {isSessionTabType(tab.type)
+                  ? (() => {
+                      const status = connectionStatuses[tab.id];
+                      const colorClass =
+                        status === "connected"
+                          ? "text-emerald-500"
+                          : status === "disconnected"
+                            ? "text-red-500"
+                            : "text-muted-foreground/40 animate-pulse";
+                      return (
+                        <span
+                          className={`shrink-0 ${colorClass} flex items-center justify-center transition-colors`}
+                          title={
+                            status === "connected"
+                              ? "Connected"
+                              : status === "disconnected"
+                                ? "Disconnected"
+                                : "Connecting..."
+                          }
+                        >
+                          {tabIcon(tab.type)}
+                        </span>
+                      );
+                    })()
+                  : tabIcon(tab.type)}
                 {tab.type !== "dashboard" && renamingTabId === tab.id ? (
                   <input
                     ref={renameInputRef}

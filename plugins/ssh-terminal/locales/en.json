@@ -166,7 +166,7 @@
       },
       "sessionTimeoutMinutes": {
         "label": "Terminal Session Persistence",
-        "description": "How long a disconnected terminal is kept alive on the server before it is closed. Min 1, max 1440 minutes. For sessions that must outlive this, enable Auto-Tmux on the host."
+        "description": "How long a disconnected terminal is kept alive on the server before it is closed. Min 1, max 4320 minutes (3 days). For sessions that must outlive this, enable Auto-Tmux on the host."
       },
       "commandHistoryEnabled": {
         "label": "Command History",
