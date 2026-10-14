@@ -454,9 +454,10 @@ export function TabBar({
                       .length + 1}
                   </span>
                 )}
-                {isSessionTabType(tab.type) && (
-                  <TabConnectionDot terminalRef={tab.terminalRef} />
-                )}
+                <TabConnectionDot
+                  terminalRef={tab.terminalRef}
+                  tabType={tab.type}
+                />
                 {tabIcon(tab.type)}
                 {tab.type !== "dashboard" && renamingTabId === tab.id ? (
                   <input

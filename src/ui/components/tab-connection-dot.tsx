@@ -5,9 +5,11 @@ import {
 import { useTerminalConnectionStatus } from "@/hooks/use-terminal-connection-status";
 import type { RefObject } from "react";
 import type { TerminalRefHandle } from "@/types/index";
+import { isSessionTabType } from "@/shell/tab-registry";
 
 interface TabConnectionDotProps {
   terminalRef: RefObject<TerminalRefHandle | null> | undefined;
+  tabType?: string;
 }
 
 /**
@@ -17,10 +19,14 @@ interface TabConnectionDotProps {
  * - red dot when disconnected
  * - pulsing gray dot when unknown (still mounting)
  */
-export function TabConnectionDot({ terminalRef }: TabConnectionDotProps) {
+export function TabConnectionDot({
+  terminalRef,
+  tabType,
+}: TabConnectionDotProps) {
   const statusScheme = useStatusColorScheme();
   const connectionStatus = useTerminalConnectionStatus(terminalRef);
 
+  if (!tabType || !isSessionTabType(tabType)) return null;
   if (!terminalRef) return null;
 
   return (
