@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { tabIcon } from "@/shell/tabUtils";
 import { isSessionTabType } from "@/shell/tab-registry";
+import { TabConnectionDot } from "@/components/tab-connection-dot";
 import { isElectron } from "@/lib/electron";
 import type { Tab, TabType } from "@/types/ui-types";
 import { ActionSlot } from "@/shell/ActionSlot";
@@ -452,6 +453,9 @@ export function TabBar({
                     {tabs.slice(0, index).filter((t) => t.type !== "dashboard")
                       .length + 1}
                   </span>
+                )}
+                {isSessionTabType(tab.type) && (
+                  <TabConnectionDot terminalRef={tab.terminalRef} />
                 )}
                 {tabIcon(tab.type)}
                 {tab.type !== "dashboard" && renamingTabId === tab.id ? (

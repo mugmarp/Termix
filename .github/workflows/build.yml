@@ -1,0 +1,42 @@
+name: Build Termix
+
+on:
+  push:
+    branches: [ "main", "connection-status-indicator" ]
+  pull_request:
+    branches: [ "main", "connection-status-indicator" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: termix-dist
+          path: dist/
+          retention-days: 30
+
+      - name: Upload build artifact (plugins)
+        uses: actions/upload-artifact@v4
+        with:
+          name: termix-dist-plugins
+          path: dist/plugins/
+          retention-days: 30
