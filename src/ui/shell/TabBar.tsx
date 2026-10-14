@@ -492,31 +492,18 @@ export function TabBar({
                       .length + 1}
                   </span>
                 )}
-                {isSessionTabType(tab.type)
-                  ? (() => {
-                      const status = connectionStatuses[tab.id];
-                      const colorClass =
-                        status === "connected"
-                          ? "text-emerald-500"
-                          : status === "disconnected"
-                            ? "text-red-500"
-                            : "text-muted-foreground/40 animate-pulse";
-                      return (
-                        <span
-                          className={`shrink-0 ${colorClass} flex items-center justify-center transition-colors`}
-                          title={
-                            status === "connected"
-                              ? "Connected"
-                              : status === "disconnected"
-                                ? "Disconnected"
-                                : "Connecting..."
-                          }
-                        >
-                          {tabIcon(tab.type)}
-                        </span>
-                      );
-                    })()
-                  : tabIcon(tab.type)}
+                {isSessionTabType(tab.type) && (
+                  <span
+                    className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-tl-sm transition-colors ${
+                      connectionStatuses[tab.id] === "connected"
+                        ? "bg-emerald-500"
+                        : connectionStatuses[tab.id] === "disconnected"
+                          ? "bg-red-500"
+                          : "bg-transparent"
+                    }`}
+                  />
+                )}
+                {tabIcon(tab.type)}
                 {tab.type !== "dashboard" && renamingTabId === tab.id ? (
                   <input
                     ref={renameInputRef}
