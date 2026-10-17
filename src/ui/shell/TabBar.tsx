@@ -505,7 +505,19 @@ export function TabBar({
                     }}
                   />
                 )}
-                {tabIcon(tab.type)}
+                <span
+                  className="flex shrink-0 items-center justify-center"
+                  style={{
+                    color:
+                      connectionStatuses[tab.id] === "connected"
+                        ? "#10b981"
+                        : connectionStatuses[tab.id] === "disconnected"
+                          ? "#ef4444"
+                          : undefined,
+                  }}
+                >
+                  {tabIcon(tab.type)}
+                </span>
                 {tab.type !== "dashboard" && renamingTabId === tab.id ? (
                   <input
                     ref={renameInputRef}
