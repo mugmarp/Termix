@@ -494,13 +494,15 @@ export function TabBar({
                 )}
                 {isSessionTabType(tab.type) && (
                   <span
-                    className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-tl-sm transition-colors ${
-                      connectionStatuses[tab.id] === "connected"
-                        ? "bg-emerald-500"
-                        : connectionStatuses[tab.id] === "disconnected"
-                          ? "bg-red-500"
-                          : "bg-transparent"
-                    }`}
+                    className="absolute left-0 top-0 bottom-0 w-[3px] rounded-tl-sm transition-colors"
+                    style={{
+                      backgroundColor:
+                        connectionStatuses[tab.id] === "connected"
+                          ? "#10b981"
+                          : connectionStatuses[tab.id] === "disconnected"
+                            ? "#ef4444"
+                            : "transparent",
+                    }}
                   />
                 )}
                 {tabIcon(tab.type)}
