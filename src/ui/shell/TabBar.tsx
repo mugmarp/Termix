@@ -27,7 +27,9 @@ import {
   Maximize2,
   Minimize2,
   PanelRight,
+  Share2,
 } from "lucide-react";
+import { invokeAction } from "@/shell/action-registry";
 import { tabIcon } from "@/shell/tabUtils";
 import { isSessionTabType } from "@/shell/tab-registry";
 
@@ -138,6 +140,17 @@ export function TabBar({
     width: number;
   } | null>(null);
   const skipIndicatorAnimRef = useRef(false);
+
+  const [showShareButton, setShowShareButton] = useState(
+    () => localStorage.getItem("showShareButton") === "true",
+  );
+  useEffect(() => {
+    const handler = () =>
+      setShowShareButton(localStorage.getItem("showShareButton") === "true");
+    handler();
+    window.addEventListener("showShareButtonChanged", handler);
+    return () => window.removeEventListener("showShareButtonChanged", handler);
+  }, []);
 
   const activeIsSplit = isSplitTab(tabs.find((tab) => tab.id === activeTabId));
 
@@ -553,6 +566,19 @@ export function TabBar({
                         <RefreshCw className="size-3" />
                       </button>
                     )}
+                    {showShareButton && (
+                      <button
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void invokeAction("session-sharing.share", tab.terminalRef?.current, tab);
+                        }}
+                        title={t("nav.shareTab")}
+                        className="flex items-center justify-center size-5 md:size-4 rounded-sm transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                      >
+                        <Share2 className="size-3" />
+                      </button>
+                    )}
                     {/* Plugins add small buttons here, invoked with the tab's surface handle. */}
                     <ActionSlot
                       slotId="tab.inline"
@@ -810,6 +836,18 @@ export function TabBar({
                   {t("nav.reconnectDisconnectedTerminals")}
                 </button>
               )}
+              <button
+                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left hover:bg-accent hover:text-accent-foreground"
+                onClick={() => {
+                  const next = localStorage.getItem("showShareButton") !== "true";
+                  localStorage.setItem("showShareButton", String(next));
+                  window.dispatchEvent(new Event("showShareButtonChanged"));
+                  setContextTabId(null);
+                }}
+              >
+                <Share2 className="size-3" />
+                {t("nav.showShareButton")}
+              </button>
               {/* Plugins add entries here, invoked with the tab's surface handle. */}
               <ActionSlot
                 slotId="tab.menu"
