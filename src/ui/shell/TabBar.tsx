@@ -27,9 +27,7 @@ import {
   Maximize2,
   Minimize2,
   PanelRight,
-  Share2,
 } from "lucide-react";
-import { invokeAction } from "@/shell/action-registry";
 import { tabIcon } from "@/shell/tabUtils";
 import { isSessionTabType } from "@/shell/tab-registry";
 
@@ -566,39 +564,35 @@ export function TabBar({
                         <RefreshCw className="size-3" />
                       </button>
                     )}
-                    {showShareButton && (
-                      <button
-                        onPointerDown={(e) => e.stopPropagation()}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          void invokeAction("session-sharing.share", tab.terminalRef?.current, tab);
-                        }}
-                        title={t("nav.shareTab")}
-                        className="flex items-center justify-center size-5 md:size-4 rounded-sm transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
-                      >
-                        <Share2 className="size-3" />
-                      </button>
-                    )}
                     {/* Plugins add small buttons here, invoked with the tab's surface handle. */}
                     <ActionSlot
                       slotId="tab.inline"
                       when={{ tab, handle: tab.terminalRef?.current }}
                       context={() => [tab.terminalRef?.current, tab]}
-                      renderItem={(contribution, invoke) => (
-                        <button
-                          onPointerDown={(e) => e.stopPropagation()}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            invoke();
-                          }}
-                          title={t(contribution.titleKey)}
-                          className="flex items-center justify-center size-5 md:size-4 rounded-sm transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
-                        >
-                          {contribution.icon && (
-                            <contribution.icon className="size-3" />
-                          )}
-                        </button>
-                      )}
+                      renderItem={(contribution, invoke) => {
+                        // Hide session-sharing share button unless user enables it
+                        if (
+                          contribution.actionId === "session-sharing.share" &&
+                          !showShareButton
+                        ) {
+                          return null;
+                        }
+                        return (
+                          <button
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              invoke();
+                            }}
+                            title={t(contribution.titleKey)}
+                            className="flex items-center justify-center size-5 md:size-4 rounded-sm transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                          >
+                            {contribution.icon && (
+                              <contribution.icon className="size-3" />
+                            )}
+                          </button>
+                        );
+                      }}
                     />
                     <button
                       onPointerDown={(e) => e.stopPropagation()}
@@ -845,7 +839,7 @@ export function TabBar({
                   setContextTabId(null);
                 }}
               >
-                <Share2 className="size-3" />
+                <RefreshCw className="size-3" />
                 {t("nav.showShareButton")}
               </button>
               {/* Plugins add entries here, invoked with the tab's surface handle. */}
