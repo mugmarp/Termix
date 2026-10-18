@@ -27,6 +27,7 @@ import {
   Maximize2,
   Minimize2,
   PanelRight,
+  Share2,
 } from "lucide-react";
 import { tabIcon } from "@/shell/tabUtils";
 import { isSessionTabType } from "@/shell/tab-registry";
@@ -839,7 +840,7 @@ export function TabBar({
                   setContextTabId(null);
                 }}
               >
-                <RefreshCw className="size-3" />
+                <Share2 className="size-3" />
                 {t("nav.showShareButton")}
               </button>
               {/* Plugins add entries here, invoked with the tab's surface handle. */}
