@@ -882,7 +882,7 @@ export function TabBar({
               <button
                 className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left hover:bg-accent hover:text-accent-foreground"
                 onClick={() => {
-                  setRenameValue(ctxTab.label);
+                  setRenameValue(ctxTab.customLabel || ctxTab.defaultTabLabel || ctxTab.label);
                   setRenamingTabId(contextTabId);
                   setContextTabId(null);
                   setContextPos(null);
