@@ -20,21 +20,35 @@ import type { UserRecord } from "../database/repositories/user-repository.js";
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
-export function isNativeAppRequest(req: Request): boolean {
-  return (
-    (req.get("User-Agent") || "").startsWith("Termix-Mobile/") ||
-    req.get("X-Electron-App") === "true"
+async function getIdleTimeoutMs(): Promise<number | null> {
+  const enabled = await createCurrentSettingsRepository().get(
+    "idle_timeout_enabled",
   );
+  if (enabled !== "true") return null;
+  const value = await createCurrentSettingsRepository().get(
+    "idle_timeout_minutes",
+  );
+  const minutes = value ? parseFloat(value) : null;
+  return minutes ? minutes * 60 * 1000 : null;
 }
 
-/** Cookie lifetime: 30 days when remembered, else session_timeout_hours. */
+/** Cookie lifetime: 30 days when remembered, else idle timeout (if enabled) or session_timeout_hours. */
 async function sessionCookieMaxAge(rememberMe: boolean): Promise<number> {
   if (rememberMe) return THIRTY_DAYS_MS;
+  const idleMs = await getIdleTimeoutMs();
+  if (idleMs) return idleMs;
   const value = await createCurrentSettingsRepository().get(
     "session_timeout_hours",
   );
   const hours = value ? parseInt(value, 10) || 24 : 24;
   return hours * 60 * 60 * 1000;
+}
+
+export function isNativeAppRequest(req: Request): boolean {
+  return (
+    (req.get("User-Agent") || "").startsWith("Termix-Mobile/") ||
+    req.get("X-Electron-App") === "true"
+  );
 }
 
 export async function syncSharedCredentialsForUserRoles(

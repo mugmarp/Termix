@@ -26,7 +26,16 @@ type GeneralSettingsSectionProps = {
   handleTogglePasswordReset: () => void;
   sessionTimeout: string;
   setSessionTimeout: Dispatch<SetStateAction<string>>;
+  sessionTimeoutUnit: "hours" | "minutes";
+  setSessionTimeoutUnit: Dispatch<SetStateAction<"hours" | "minutes">>;
   handleSaveSessionTimeout: () => void;
+  idleTimeoutEnabled: boolean;
+  setIdleTimeoutEnabled: Dispatch<SetStateAction<boolean>>;
+  idleTimeoutValue: string;
+  setIdleTimeoutValue: Dispatch<SetStateAction<string>>;
+  idleTimeoutUnit: "minutes" | "seconds";
+  setIdleTimeoutUnit: Dispatch<SetStateAction<"minutes" | "seconds">>;
+  handleSaveIdleTimeout: () => void;
   statusInterval: string;
   setStatusInterval: Dispatch<SetStateAction<string>>;
   handleSaveMonitoring: () => void;
@@ -52,7 +61,16 @@ export function AdminGeneralSettingsSection({
   handleTogglePasswordReset,
   sessionTimeout,
   setSessionTimeout,
+  sessionTimeoutUnit,
+  setSessionTimeoutUnit,
   handleSaveSessionTimeout,
+  idleTimeoutEnabled,
+  setIdleTimeoutEnabled,
+  idleTimeoutValue,
+  setIdleTimeoutValue,
+  idleTimeoutUnit,
+  setIdleTimeoutUnit,
+  handleSaveIdleTimeout,
   statusInterval,
   setStatusInterval,
   handleSaveMonitoring,
@@ -146,17 +164,26 @@ export function AdminGeneralSettingsSection({
           <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             {t("admin.sessionTimeout")}
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <select
+              value={sessionTimeoutUnit}
+              onChange={(e) => setSessionTimeoutUnit(e.target.value as "hours" | "minutes")}
+              className="w-20 text-sm rounded border border-input bg-background"
+            >
+              <option value="hours">{t("admin.hours")}</option>
+              <option value="minutes">{t("admin.minutes")}</option>
+            </select>
             <Input
               type="number"
-              min={1}
-              max={720}
+              min={sessionTimeoutUnit === "hours" ? 1 : 0.5}
+              max={sessionTimeoutUnit === "hours" ? 720 : 60}
+              step={sessionTimeoutUnit === "hours" ? 1 : 0.5}
               value={sessionTimeout}
               onChange={(e) => setSessionTimeout(e.target.value)}
               className="w-20 text-sm"
             />
             <span className="text-xs text-muted-foreground">
-              {t("admin.hours")}
+              {sessionTimeoutUnit === "hours" ? t("admin.hours") : t("admin.minutes")}
             </span>
             <Button
               variant="outline"
@@ -168,8 +195,60 @@ export function AdminGeneralSettingsSection({
             </Button>
           </div>
           <span className="text-[10px] text-muted-foreground">
-            {t("admin.sessionTimeoutRange")}
+            {sessionTimeoutUnit === "hours" ? t("admin.sessionTimeoutRangeHours") : t("admin.sessionTimeoutRangeMinutes")}
           </span>
+        </div>
+
+        <div className="flex flex-col gap-2 border-t border-border pt-3 mt-2">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            {t("admin.idleTimeout")}
+          </span>
+          <SettingRow
+            label={t("admin.idleTimeoutEnabled")}
+            description={t("admin.idleTimeoutEnabledDesc")}
+          >
+            <AdminToggle
+              on={idleTimeoutEnabled}
+              onToggle={setIdleTimeoutEnabled}
+            />
+          </SettingRow>
+          {idleTimeoutEnabled && (
+            <div className="flex flex-col gap-2 pt-3 mt-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <select
+                  value={idleTimeoutUnit}
+                  onChange={(e) => setIdleTimeoutUnit(e.target.value as "minutes" | "seconds")}
+                  className="w-28 text-sm rounded border border-input bg-background"
+                >
+                  <option value="minutes">{t("admin.minutes")}</option>
+                  <option value="seconds">{t("admin.seconds")}</option>
+                </select>
+                <Input
+                  type="number"
+                  min={idleTimeoutUnit === "minutes" ? 0.5 : 30}
+                  max={idleTimeoutUnit === "minutes" ? 60 : 3600}
+                  step={idleTimeoutUnit === "minutes" ? 0.5 : 1}
+                  value={idleTimeoutValue}
+                  onChange={(e) => setIdleTimeoutValue(e.target.value)}
+                  className="w-20 text-sm"
+                />
+                <span className="text-xs text-muted-foreground">
+                  {idleTimeoutUnit === "minutes" ? t("admin.minutes") : t("admin.seconds")}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 hover:text-accent-brand h-7"
+                  onClick={handleSaveIdleTimeout}
+                >
+                  {t("common.save")}
+                </Button>
+              </div>
+              <span className="text-[10px] text-muted-foreground">
+                {idleTimeoutUnit === "minutes" ? t("admin.idleTimeoutRangeMinutes") : t("admin.idleTimeoutRangeSeconds")}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-2 border-t border-border pt-3 mt-2">

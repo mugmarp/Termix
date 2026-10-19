@@ -43,6 +43,16 @@ export async function updateSessionTimeout(
   }
 }
 
+export async function updateIdleTimeout(
+  idleTimeoutMinutes: number,
+): Promise<void> {
+  try {
+    await authApi.patch("/users/idle-timeout", { idleTimeoutMinutes });
+  } catch (error) {
+    handleApiError(error, "update idle timeout");
+  }
+}
+
 // Tailscale settings/device API wrappers moved to
 // plugins/tailscale/src/frontend/tailscale-api.ts.
 

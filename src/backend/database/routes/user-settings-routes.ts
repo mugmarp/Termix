@@ -192,6 +192,75 @@ export function registerUserSettingsRoutes(
     }
   });
 
+  /** Idle timeout: when enabled, sessions expire after this many minutes of inactivity. */
+  router.get("/idle-timeout", authenticateJWT, async (_req, res) => {
+    const userId = (_req as AuthenticatedRequest).userId;
+    try {
+      const actor = await getAdminActor(userId);
+      if (!actor) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+      const enabled = await createCurrentSettingsRepository().get(
+        "idle_timeout_enabled",
+      );
+      const value = await createCurrentSettingsRepository().get(
+        "idle_timeout_minutes",
+      );
+      res.json({
+        idleTimeoutMinutes: value ? parseFloat(value) : null,
+        enabled: enabled === "true",
+      });
+    } catch (err) {
+      authLogger.error("Failed to get idle timeout", err);
+      res.status(500).json({ error: "Failed to get idle timeout" });
+    }
+  });
+
+  router.patch("/idle-timeout", authenticateJWT, async (req, res) => {
+    const userId = (req as AuthenticatedRequest).userId;
+    try {
+      const actor = await getAdminActor(userId);
+      if (!actor) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+      const { idleTimeoutMinutes, enabled } = req.body;
+      if (
+        typeof idleTimeoutMinutes !== "number" ||
+        idleTimeoutMinutes < 0.5 ||
+        idleTimeoutMinutes > 60
+      ) {
+        return res
+          .status(400)
+          .json({ error: "idleTimeoutMinutes must be between 0.5 and 60" });
+      }
+      await createCurrentSettingsRepository().set(
+        "idle_timeout_minutes",
+        String(idleTimeoutMinutes),
+      );
+      await createCurrentSettingsRepository().set(
+        "idle_timeout_enabled",
+        String(enabled === true),
+      );
+
+      const { ipAddress, userAgent } = getRequestMeta(req);
+      await logAudit({
+        userId,
+        username: actor.username ?? userId,
+        action: "update_idle_timeout",
+        resourceType: "setting",
+        details: JSON.stringify({ idleTimeoutMinutes, enabled }),
+        ipAddress,
+        userAgent,
+        success: true,
+      });
+
+      res.json({ idleTimeoutMinutes, enabled });
+    } catch (err) {
+      authLogger.error("Failed to set idle timeout", err);
+      res.status(500).json({ error: "Failed to set idle timeout" });
+    }
+  });
+
   /**
    * @openapi
    * /users/audit-forwarding:

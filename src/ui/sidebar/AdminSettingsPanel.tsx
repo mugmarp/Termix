@@ -27,6 +27,7 @@ import {
   updateSessionTimeout,
   getStatusCheckSettings,
   updateStatusCheckSettings,
+  updateIdleTimeout,
   getLogLevel,
   updateLogLevel,
   getExternalAutoProvision,
@@ -117,6 +118,10 @@ export function AdminSettingsPanel({
   const [passwordLoginForced, setPasswordLoginForced] = useState(false);
   const [allowPasswordReset, setAllowPasswordReset] = useState(true);
   const [sessionTimeout, setSessionTimeout] = useState("24");
+  const [sessionTimeoutUnit, setSessionTimeoutUnit] = useState<"hours" | "minutes">("hours");
+  const [idleTimeoutEnabled, setIdleTimeoutEnabled] = useState(false);
+  const [idleTimeoutValue, setIdleTimeoutValue] = useState("0.5");
+  const [idleTimeoutUnit, setIdleTimeoutUnit] = useState<"minutes" | "seconds">("minutes");
   const [statusInterval, setStatusInterval] = useState("30");
   const [logLevel, setLogLevel] = useState("info");
   const [notificationPrivateEndpoints, setNotificationPrivateEndpoints] =
@@ -445,16 +450,52 @@ export function AdminSettingsPanel({
   }
 
   async function handleSaveSessionTimeout() {
-    const hours = parseInt(sessionTimeout, 10);
-    if (isNaN(hours) || hours < 1 || hours > 720) {
-      toast.error(t("admin.sessionTimeoutRange2"));
+    const value = parseFloat(sessionTimeout);
+    if (isNaN(value)) {
+      toast.error(t("admin.sessionTimeoutInvalid"));
       return;
     }
+    if (sessionTimeoutUnit === "hours") {
+      if (value < 1 || value > 720) {
+        toast.error(t("admin.sessionTimeoutRange2"));
+        return;
+      }
+    } else {
+      if (value < 0.5 || value > 60) {
+        toast.error(t("admin.sessionTimeoutRangeMinutes"));
+        return;
+      }
+    }
     try {
-      await updateSessionTimeout(hours);
+      await updateSessionTimeout(sessionTimeoutUnit === "hours" ? value : value / 60);
       toast.success(t("admin.sessionTimeoutSaved"));
     } catch {
       toast.error(t("admin.sessionTimeoutSaveFailed"));
+    }
+  }
+
+  async function handleSaveIdleTimeout() {
+    const value = parseFloat(idleTimeoutValue);
+    if (isNaN(value)) {
+      toast.error(t("admin.idleTimeoutInvalid"));
+      return;
+    }
+    if (idleTimeoutUnit === "minutes") {
+      if (value < 0.5 || value > 60) {
+        toast.error(t("admin.idleTimeoutRangeMinutes"));
+        return;
+      }
+    } else {
+      if (value < 30 || value > 3600) {
+        toast.error(t("admin.idleTimeoutRangeSeconds"));
+        return;
+      }
+    }
+    try {
+      await updateIdleTimeout(idleTimeoutUnit === "minutes" ? value : value / 60);
+      toast.success(t("admin.idleTimeoutSaved"));
+    } catch {
+      toast.error(t("admin.idleTimeoutSaveFailed"));
     }
   }
 
@@ -781,7 +822,16 @@ export function AdminSettingsPanel({
         handleTogglePasswordReset={handleTogglePasswordReset}
         sessionTimeout={sessionTimeout}
         setSessionTimeout={setSessionTimeout}
+        sessionTimeoutUnit={sessionTimeoutUnit}
+        setSessionTimeoutUnit={setSessionTimeoutUnit}
         handleSaveSessionTimeout={handleSaveSessionTimeout}
+        idleTimeoutEnabled={idleTimeoutEnabled}
+        setIdleTimeoutEnabled={setIdleTimeoutEnabled}
+        idleTimeoutValue={idleTimeoutValue}
+        setIdleTimeoutValue={setIdleTimeoutValue}
+        idleTimeoutUnit={idleTimeoutUnit}
+        setIdleTimeoutUnit={setIdleTimeoutUnit}
+        handleSaveIdleTimeout={handleSaveIdleTimeout}
         statusInterval={statusInterval}
         setStatusInterval={setStatusInterval}
         handleSaveMonitoring={handleSaveMonitoring}
