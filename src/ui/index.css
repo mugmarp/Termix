@@ -1,6 +1,7 @@
 /* Plugin utilities (termix-plugin build) rank above base, below core's own. */
 @layer properties, termix-plugin-properties, theme, base, components,
   termix-plugin-utilities, utilities;
+@custom-variant dark (&:where(.dark, .dark *));
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "./theme.css";
