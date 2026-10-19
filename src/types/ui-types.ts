@@ -166,6 +166,7 @@ export type Tab = {
   type: TabType;
   label: string;
   customLabel?: string;
+  defaultTabLabel?: string;
   host?: Host;
   openedAt: number;
   restoredSessionId?: string | null;

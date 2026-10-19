@@ -546,7 +546,23 @@ export function TabBar({
                     style={{ fontWeight: "inherit" }}
                   />
                 ) : (
-                  tab.type !== "dashboard" && tab.label
+                  tab.type !== "dashboard" && (
+                    <div className="flex flex-col justify-center min-w-0 leading-tight">
+                      <span
+                        className="truncate text-sm"
+                        style={{ fontWeight: "inherit" }}
+                        title={tab.host?.name}
+                      >
+                        {tab.host?.name}
+                      </span>
+                      <span
+                        className="truncate text-xs text-muted-foreground"
+                        title={tab.customLabel || tab.defaultTabLabel || tab.label}
+                      >
+                        {tab.customLabel || tab.defaultTabLabel || tab.label}
+                      </span>
+                    </div>
+                  )
                 )}
                 {tab.type !== "dashboard" && renamingTabId !== tab.id && (
                   <div

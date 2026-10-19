@@ -1562,6 +1562,19 @@ export function AppShell({
             )
           : prev;
 
+      // Per-host tab numbering: find next available number for this host
+      const hostId = host?.id ?? "";
+      const existingNumbers = new Set<number>();
+      for (const t of prev) {
+        if (t.host?.id === hostId && t.defaultTabLabel) {
+          const match = t.defaultTabLabel.match(/(\d+)$/);
+          if (match) existingNumbers.add(parseInt(match[1], 10));
+        }
+      }
+      let nextTabNumber = 1;
+      while (existingNumbers.has(nextTabNumber)) nextTabNumber++;
+      const defaultTabLabel = `Tab ${nextTabNumber}`;
+
       return [
         ...next,
         {
@@ -1569,6 +1582,7 @@ export function AppShell({
           instanceId,
           type,
           label: finalLabel,
+          defaultTabLabel,
           host,
           openedAt,
           terminalRef: ref,
