@@ -206,6 +206,71 @@ pm2 restart termix-backend
 
 ---
 
+## Implementation Workflow
+
+### Git Strategy
+
+1. **Forked** `Termix-SSH/Termix` to `mugmarp/Termix` on GitHub
+2. **Created branch** `connection-status-indicator` — never commit to main
+3. **Push** each change to the fork; CI builds automatically
+
+### Build Process (891MB VM)
+
+```bash
+# Build (heap limit needed for 891MB RAM)
+NODE_OPTIONS="--max-old-space-size=700" npm run build
+
+# Fix permissions (nginx workers run as nobody)
+chmod -R 755 dist
+
+# Restart backend
+pm2 restart termix-backend
+```
+
+### How Each Customization Was Implemented
+
+**Dark Theme Fix** — Added `@custom-variant dark (&:where(.dark, .dark *));` before `@import "tailwindcss"` in `src/ui/index.css`. This single line tells Tailwind v4 that `.dark` is a variant selector, preventing it from purging `.dark` rules.
+
+**Connection Status Indicator** —
+- **Producer side** (`Terminal.tsx`): Added a `useEffect` that writes `isConnected` into `window.__termixConnectionStatus[hostId]` and dispatches `new Event("termix-connection-status-changed")`.
+- **Consumer side** (`TabBar.tsx`): Added `useState` for statuses, a `useEffect` that polls the store every 2s and also listens for the event, and inline `style={{ backgroundColor: "#10b981" }}` for colors.
+- **Key decision**: Used `window` as the data bus because the plugin build cannot resolve imports outside its directory. The `window` object is opaque to the bundler so the code is never tree-shaken.
+
+**Toggleable Share Button** —
+- **State**: `useState(() => localStorage.getItem("showShareButton") === "true")`
+- **Persistence**: `localStorage.setItem("showShareButton", String(next))` + `window.dispatchEvent(new Event("showShareButtonChanged"))`
+- **UI**: `useEffect` listens for `showShareButtonChanged` to update state reactively
+- **Filtering**: In `ActionSlot`'s `renderItem` callback, return `null` when `contribution.actionId === "session-sharing.share"` and `!showShareButton`
+
+**Session Timeout Unit Selector** —
+- **State**: `sessionTimeoutUnit` (`"hours"` | `"minutes"`) with default `"hours"`
+- **UI**: A `<select>` dropdown between the label and the numeric input. The input's `min`, `max`, and `step` change based on the selected unit.
+- **Save**: Converts to hours: `updateSessionTimeout(unit === "hours" ? value : value / 60)`
+- **Load**: Converts from hours: `setSessionTimeout(unit === "minutes" ? String(hours * 60) : String(hours))`
+- **Backend**: Changed validation from `< 1` to `<= 0` to accept fractional hours (30 min = 0.5 h)
+
+**Idle Timeout** —
+- **State**: `idleTimeoutEnabled` (default `false`), `idleTimeoutValue` (default `"0.5"`), `idleTimeoutUnit` (default `"minutes"`)
+- **UI**: `AdminToggle` with `onToggle={() => setIdleTimeoutEnabled((prev) => !prev)}` — the functional setState pattern is required because `AdminToggle` calls `onToggle()` with no arguments
+- **Backend routes**: `GET /users/idle-timeout` and `PATCH /users/idle-timeout` with validation (0.5–60 minutes)
+- **Auth integration**: `session-issuer.ts` has a `getIdleTimeoutMs()` function that checks `idle_timeout_enabled === "true"` and returns `idle_timeout_minutes * 60000`. `sessionCookieMaxAge` uses it before falling back to `session_timeout_hours`.
+
+**Toast Close Button** —
+- Added `closeButton` prop to `<Sonner>` in `src/ui/components/sonner.tsx`
+- Added Tailwind class `"absolute! top-1.5! right-1.5! left-auto! bottom-auto! size-4! rounded!"` to the `closeButton` classNames to position it at the top-right corner
+
+### Deployment Architecture
+
+```
+Browser → Caddy (:443, TLS) → nginx (:8081, routing) → Termix backend (:30001, 127.0.0.1)
+```
+
+- All internal ports (30001–30012) stay on localhost
+- UFW: only 22, 80, 443 open
+- pm2 manages the backend with systemd startup for boot persistence
+
+---
+
 ## Document Index
 
 | Document | Purpose |
