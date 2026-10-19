@@ -315,8 +315,13 @@ export function AdminSettingsPanel({
       if (secondFactorExternal.status === "fulfilled")
         setSecondFactorAfterExternalLogin(secondFactorExternal.value.enabled);
       if (pwReset.status === "fulfilled") setAllowPasswordReset(pwReset.value);
-      if (timeout.status === "fulfilled")
-        setSessionTimeout(String(timeout.value.timeoutHours));
+      if (timeout.status === "fulfilled") {
+        const hours = timeout.value.timeoutHours;
+        // Convert to minutes if that's the selected unit
+        setSessionTimeout(
+          sessionTimeoutUnit === "minutes" ? String(hours * 60) : String(hours)
+        );
+      }
       if (monitoring.status === "fulfilled") {
         setStatusInterval(String(monitoring.value.statusCheckInterval));
       }

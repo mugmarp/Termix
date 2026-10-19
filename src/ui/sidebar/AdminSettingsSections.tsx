@@ -209,7 +209,7 @@ export function AdminGeneralSettingsSection({
           >
             <AdminToggle
               on={idleTimeoutEnabled}
-              onToggle={setIdleTimeoutEnabled}
+              onToggle={() => setIdleTimeoutEnabled((prev) => !prev)}
             />
           </SettingRow>
           {idleTimeoutEnabled && (
