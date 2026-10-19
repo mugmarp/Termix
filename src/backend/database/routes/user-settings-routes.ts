@@ -161,12 +161,12 @@ export function registerUserSettingsRoutes(
       const { timeoutHours } = req.body;
       if (
         typeof timeoutHours !== "number" ||
-        timeoutHours < 1 ||
+        timeoutHours <= 0 ||
         timeoutHours > 720
       ) {
         return res
           .status(400)
-          .json({ error: "timeoutHours must be between 1 and 720" });
+          .json({ error: "timeoutHours must be greater than 0 and at most 720" });
       }
       await createCurrentSettingsRepository().set(
         "session_timeout_hours",
