@@ -21,6 +21,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
             "group-[.toast]:bg-accent-brand group-[.toast]:text-white group-[.toast]:font-semibold",
           cancelButton:
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
+          closeButton:
+            "absolute! top-1! left-1! right-auto! bottom-auto! size-4! rounded! p-0! flex! items-center! justify-center!",
           success:
             "group-[.toast]:!text-accent-brand group-[.toast]:!border-accent-brand/30",
           info: "group-[.toast]:!text-accent-brand group-[.toast]:!border-accent-brand/30",
@@ -45,6 +47,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--error-text": "var(--destructive)",
         } as React.CSSProperties
       }
+      closeButton
       {...props}
     />
   );
