@@ -150,7 +150,49 @@ With `closeButton` Tailwind class: `absolute! top-1.5! right-1.5! left-auto! bot
 
 ---
 
-## 7. CI Build Workflow
+## 7. Toast Close Button (Top-Left)
+
+### What
+All toast notifications now have a close (X) button positioned at the **top-left corner** of the toast box.
+
+### Implementation
+- Added `closeButton` prop to `<Sonner>` in `src/ui/components/sonner.tsx`
+- Positioned via Tailwind classes with `!` overrides: `absolute! top-1! left-1! right-auto! bottom-auto! size-4! rounded!`
+- The `!` overrides ensure the positioning always wins over Sonner's default close-button styles
+
+---
+
+## 8. Two-Line Tab Labels with Per-Host Numbering
+
+### What
+Each SSH terminal tab displays two vertically stacked text labels:
+
+| Line | Content | Behavior |
+|---|---|---|
+| Top | Host name (`tab.host?.name`) | Always preserved, never changed by rename |
+| Bottom | Tab label (`Tab 1`, `Tab 2`, ...) | Independently renameable |
+
+### Per-Host Numbering
+- Each host has its own numbering sequence
+- Numbers are assigned at creation: finds next available number for that host
+- Numbers persist when other tabs close (no renumbering)
+- Duplicate tab gets the next available number for that host
+
+### Rename Fix
+The rename input pre-fills with the current display label:
+`customLabel || defaultTabLabel || label` (not the raw `label` field).
+This prevents the old host-based label from reappearing when you press Enter.
+
+### Files Changed
+| File | Change |
+|---|---|
+| `src/types/ui-types.ts` | Added `defaultTabLabel?: string` to Tab |
+| `src/ui/shell/TabBar.tsx` | Two-line label rendering, rename pre-fill fix |
+| `src/ui/AppShell.tsx` | Per-host numbering on tab creation |
+
+---
+
+## 9. CI Build Workflow
 
 ### What
 GitHub Actions workflow that builds Termix on every push to `connection-status-indicator` branch.
@@ -191,6 +233,30 @@ The CI workflow (`.github/workflows/build.yml`) also produces a deployable `dist
 chmod -R 755 dist
 pm2 restart termix-backend
 ```
+
+---
+
+## Upgrade Resilience
+
+All customizations are centralized in **wrapper components** — not deep in plugin internals:
+
+| Customization | Wrapper Component | Upgrade Risk |
+|---|---|---|
+| Dark theme fix | `src/ui/index.css` | Low — single directive |
+| Toast close button | `src/ui/components/sonner.tsx` | Low — wrapper props |
+| Two-line tab labels | `src/ui/shell/TabBar.tsx` | Medium — JSX structure |
+| Rename fix | `src/ui/shell/TabBar.tsx` | Medium — context menu |
+| Connection indicator | `src/ui/shell/TabBar.tsx` | Medium — JSX structure |
+| Session/idle timeout | `src/ui/sidebar/AdminSettingsSections.tsx` | Medium — JSX structure |
+| Share button toggle | `src/ui/shell/TabBar.tsx` | Low — filter callback |
+
+**When upgrading Termix:**
+
+1. **Re-apply** any changes that no longer exist in the new version
+2. **Re-verify** all wrapper components render correctly
+3. **Re-test** the full feature set before deploying
+
+The connection indicator uses a `window` event bus pattern that is resilient to internal refactors — the producer and consumer are decoupled.
 
 ---
 
