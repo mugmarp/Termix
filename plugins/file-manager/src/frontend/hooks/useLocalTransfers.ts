@@ -351,16 +351,33 @@ export function useLocalTransfers({
               const transferId = createLocalTransferId("local-upload");
               trackTransfer(transferId, fileName);
               try {
-                await uploadLocalFileToSession({
-                  sessionId,
-                  remoteDir: targetDir,
-                  localPath: file.localPath,
-                  fileName,
-                  hostId,
-                  transferId,
-                  onProgress: ({ transferred }) =>
-                    progress(transferId, transferred),
-                });
+                const isDesktop = typeof window !== "undefined" && !!(window as unknown as { electronAPI?: Record<string, unknown> }).electronAPI;
+                if (isDesktop) {
+                  await uploadLocalFileToSession({
+                    sessionId,
+                    remoteDir: targetDir,
+                    localPath: file.localPath,
+                    fileName,
+                    hostId,
+                    transferId,
+                    onProgress: ({ transferred }) =>
+                      progress(transferId, transferred),
+                  });
+                } else {
+                  const response = await fetch(file.localPath);
+                  const blob = await response.blob();
+                  const fileObj = new File([blob], fileName);
+                  await uploadSSHFile(
+                    sessionId,
+                    targetDir,
+                    fileName,
+                    fileObj,
+                    hostId,
+                    undefined,
+                    ({ bytesSent }) => progress(transferId, bytesSent),
+                    undefined,
+                  );
+                }
               } catch (error) {
                 if (!isCancelled()) {
                   failed.push(file.relativePath);
