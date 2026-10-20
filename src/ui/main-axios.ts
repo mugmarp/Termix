@@ -897,6 +897,7 @@ export {
   updateLogLevel,
   getSessionTimeout,
   updateSessionTimeout,
+  getIdleTimeout,
   updateIdleTimeout,
 } from "@/api/settings-api";
 

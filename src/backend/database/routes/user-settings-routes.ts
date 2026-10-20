@@ -127,7 +127,7 @@ export function registerUserSettingsRoutes(
         "session_timeout_hours",
       );
       res.json({
-        timeoutHours: value ? parseInt(value, 10) : 24,
+        timeoutHours: value ? parseFloat(value) : 24,
       });
     } catch (err) {
       authLogger.error("Failed to get session timeout", err);

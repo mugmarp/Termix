@@ -1338,11 +1338,25 @@ export function AppShell({
                 saved.label !== host.name &&
                 !/^.+ \(\d+\)$/.test(saved.label);
 
+              // Generate per-host defaultTabLabel for restored tabs
+              const hostIdForNumbering = host?.id ?? "";
+              const existingNumbersForRestore = new Set<number>();
+              for (const t of [...tabs, ...restoredTabs]) {
+                if (t.host?.id === hostIdForNumbering && t.defaultTabLabel) {
+                  const match = t.defaultTabLabel.match(/(\d+)$/);
+                  if (match) existingNumbersForRestore.add(parseInt(match[1], 10));
+                }
+              }
+              let nextRestoreNumber = 1;
+              while (existingNumbersForRestore.has(nextRestoreNumber)) nextRestoreNumber++;
+              const restoredDefaultTabLabel = host ? `Tab ${nextRestoreNumber}` : undefined;
+
               restoredTabs.push({
                 id: tabId,
                 instanceId: saved.id,
                 type: saved.tabType as TabType,
                 label: saved.label,
+                defaultTabLabel: restoredDefaultTabLabel,
                 customLabel: isCustomLabel ? saved.label : undefined,
                 host,
                 openedAt: new Date(saved.createdAt).getTime(),

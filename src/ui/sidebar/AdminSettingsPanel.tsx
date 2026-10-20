@@ -283,6 +283,7 @@ export function AdminSettingsPanel({
         pwLogin,
         pwReset,
         timeout,
+        idleTimeout,
         monitoring,
         level,
         oidcProv,
@@ -294,6 +295,7 @@ export function AdminSettingsPanel({
         getPasswordLoginAllowed(),
         getPasswordResetAllowed(),
         getSessionTimeout(),
+        getIdleTimeout(),
         getStatusCheckSettings(),
         getLogLevel(),
         getExternalAutoProvision(),
@@ -321,6 +323,17 @@ export function AdminSettingsPanel({
         setSessionTimeout(
           sessionTimeoutUnit === "minutes" ? String(hours * 60) : String(hours)
         );
+      }
+      if (idleTimeout.status === "fulfilled") {
+        setIdleTimeoutEnabled(idleTimeout.value.enabled);
+        if (idleTimeout.value.idleTimeoutMinutes != null) {
+          // Convert minutes to seconds if that's the selected unit
+          setIdleTimeoutValue(
+            idleTimeoutUnit === "seconds"
+              ? String(idleTimeout.value.idleTimeoutMinutes * 60)
+              : String(idleTimeout.value.idleTimeoutMinutes)
+          );
+        }
       }
       if (monitoring.status === "fulfilled") {
         setStatusInterval(String(monitoring.value.statusCheckInterval));

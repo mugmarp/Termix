@@ -43,6 +43,18 @@ export async function updateSessionTimeout(
   }
 }
 
+export async function getIdleTimeout(): Promise<{
+  idleTimeoutMinutes: number | null;
+  enabled: boolean;
+}> {
+  try {
+    const response = await authApi.get("/users/idle-timeout");
+    return response.data;
+  } catch (error) {
+    handleApiError(error, "fetch idle timeout");
+  }
+}
+
 export async function updateIdleTimeout(
   idleTimeoutMinutes: number,
 ): Promise<void> {
