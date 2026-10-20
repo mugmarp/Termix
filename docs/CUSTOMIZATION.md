@@ -270,6 +270,42 @@ A thorough review of all customizations revealed 4 bugs that only appear on hard
 
 **File:** `src/ui/components/sonner.tsx`
 
+### Bug 5: Session Cookie Resets to 24h (Separate from Bug 1)
+
+**Root cause:** `session-issuer.ts` used `parseInt(value, 10) || 24` for cookie lifetime. When `session_timeout_hours = "0.5"` (30 minutes), `parseInt("0.5")` returns `0`, and `0 || 24` evaluates to `24`. Any fractional hour value became 24 hours in the actual session cookie.
+
+**Fix:** Changed to `parseFloat(value) || 24` so fractional hours survive.
+
+**File:** `src/backend/auth/session-issuer.ts`
+
+**Note:** This is separate from Bug 1 (which was in the GET API route). Both had the same `parseInt` truncation bug.
+
+### Bug 6: SFTP Uploads Fail — Dead Nginx Ports
+
+**Root cause:** nginx config routed file-manager uploads to port 30004 (and other services to ports 30002-30012), but in Termix 2.9.2 everything runs on the single port 30001. All those ports are dead.
+
+**Evidence:** `ss -tlnp` showed only 30001, 8081, and 443 listening. Port 30004 was not listening.
+
+**Fix:** Updated all nginx `proxy_pass` directives to route to `127.0.0.1:30001`. Added `client_max_body_size 5G` to the file-manager and plugin-api routes.
+
+**File:** `/etc/nginx/sites-enabled/termix`
+
+### Bug 7: Folder Upload Creates Folder but Not Contents
+
+**Root cause:** `uploadLocalFileToSession` requires `window.electronAPI?.localTransfer` (desktop-only). `createSSHFolder` uses the HTTP API (works in browser). In the browser, the folder gets created but every file upload throws "Local transfers are only available in the desktop app".
+
+**Fix:** Added browser fallback in `useLocalTransfers.ts`: detect Electron vs browser, use `uploadSSHFile` (HTTP API) for browser uploads via `fetch` + `File` API.
+
+**File:** `plugins/file-manager/src/frontend/hooks/useLocalTransfers.ts`
+
+### Bug 8: Session Timeout Unit Not Persisted
+
+**Root cause:** `sessionTimeoutUnit` and `idleTimeoutUnit` were React state only, defaulting to "hours"/"minutes" on every fresh device. The value was saved correctly but the unit selector reset.
+
+**Fix:** Added localStorage persistence with `useEffect` hooks for both unit selectors.
+
+**File:** `src/ui/sidebar/AdminSettingsPanel.tsx`
+
 ### Upgrade Resilience
 
 All customizations are centralized in **wrapper components** — not deep in plugin internals:
