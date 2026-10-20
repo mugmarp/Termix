@@ -236,7 +236,41 @@ pm2 restart termix-backend
 
 ---
 
-## Upgrade Resilience
+## Deep Review — Bugs Found and Fixed
+
+A thorough review of all customizations revealed 4 bugs that only appear on hard refresh or fresh device loading:
+
+### Bug 1: Session Timeout Resets to 0 on Refresh
+
+**Root cause:** Backend `GET /users/session-timeout` used `parseInt(value, 10)` which truncates fractional hours. Saving 30 minutes stores `0.5` in the database, but `parseInt("0.5", 10)` = `0`.
+
+**Fix:** Changed to `parseFloat(value)` so fractional hours survive the round-trip.
+
+**File:** `src/backend/database/routes/user-settings-routes.ts`
+
+### Bug 2: Tab Numbering Reverts on Refresh
+
+**Root cause:** `defaultTabLabel` was only assigned to newly created tabs. Tabs restored from the backend on login had no `defaultTabLabel`, so the display fell back to the old `label` field (e.g., `vm (2)`).
+
+**Fix:** Added per-host numbering logic to the restored-tabs path in `AppShell.tsx`. Each restored tab now gets `Tab N` based on the same per-host algorithm.
+
+**File:** `src/ui/AppShell.tsx`
+
+### Bug 3: Idle Timeout Never Loaded from Backend
+
+**Root cause:** The idle timeout settings were saved to the backend but never fetched on load. No `getIdleTimeout()` API function existed, and no load effect ran. On every refresh, idle timeout reset to defaults (disabled, 0.5 minutes).
+
+**Fix:** Added `getIdleTimeout()` to `settings-api.ts`, re-exported in `main-axios.ts`, added to `Promise.allSettled` in `loadGeneralSettings()`, and added a load handler with proper unit conversion (minutes to seconds when unit is "seconds").
+
+**Files:** `src/ui/api/settings-api.ts`, `src/ui/main-axios.ts`, `src/ui/sidebar/AdminSettingsPanel.tsx`
+
+### Bug 4: Toast Close Button Too Small
+
+**Fix:** Enlarged from `size-4` to `size-5` for better visibility and click target.
+
+**File:** `src/ui/components/sonner.tsx`
+
+### Upgrade Resilience
 
 All customizations are centralized in **wrapper components** — not deep in plugin internals:
 
