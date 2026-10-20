@@ -118,10 +118,23 @@ export function AdminSettingsPanel({
   const [passwordLoginForced, setPasswordLoginForced] = useState(false);
   const [allowPasswordReset, setAllowPasswordReset] = useState(true);
   const [sessionTimeout, setSessionTimeout] = useState("24");
-  const [sessionTimeoutUnit, setSessionTimeoutUnit] = useState<"hours" | "minutes">("hours");
+  const [sessionTimeoutUnit, setSessionTimeoutUnit] = useState<"hours" | "minutes">(
+    () => (localStorage.getItem("termix_session_timeout_unit") as "hours" | "minutes") || "hours"
+  );
   const [idleTimeoutEnabled, setIdleTimeoutEnabled] = useState(false);
   const [idleTimeoutValue, setIdleTimeoutValue] = useState("0.5");
-  const [idleTimeoutUnit, setIdleTimeoutUnit] = useState<"minutes" | "seconds">("minutes");
+  const [idleTimeoutUnit, setIdleTimeoutUnit] = useState<"minutes" | "seconds">(
+    () => (localStorage.getItem("termix_idle_timeout_unit") as "minutes" | "seconds") || "minutes"
+  );
+
+  // Persist unit selectors to localStorage so they survive refresh and fresh devices
+  useEffect(() => {
+    localStorage.setItem("termix_session_timeout_unit", sessionTimeoutUnit);
+  }, [sessionTimeoutUnit]);
+
+  useEffect(() => {
+    localStorage.setItem("termix_idle_timeout_unit", idleTimeoutUnit);
+  }, [idleTimeoutUnit]);
   const [statusInterval, setStatusInterval] = useState("30");
   const [logLevel, setLogLevel] = useState("info");
   const [notificationPrivateEndpoints, setNotificationPrivateEndpoints] =

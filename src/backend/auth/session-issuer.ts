@@ -40,7 +40,7 @@ async function sessionCookieMaxAge(rememberMe: boolean): Promise<number> {
   const value = await createCurrentSettingsRepository().get(
     "session_timeout_hours",
   );
-  const hours = value ? parseInt(value, 10) || 24 : 24;
+  const hours = value ? parseFloat(value) || 24 : 24;
   return hours * 60 * 60 * 1000;
 }
 
