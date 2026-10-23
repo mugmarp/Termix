@@ -179,7 +179,7 @@ export const FullScreenAppWrapper: React.FC<FullScreenAppWrapperProps> = ({
             >
               <Auth onLogin={handleAuthSuccess} />
               <Toaster
-                position="bottom-right"
+                position="top-right"
                 richColors={false}
                 closeButton
                 duration={5000}

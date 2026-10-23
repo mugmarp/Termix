@@ -351,7 +351,7 @@ function App() {
         </div>
       )}
 
-      <Toaster position="bottom-right" />
+      <Toaster position="top-right" />
     </>
   );
 }
