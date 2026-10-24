@@ -137,6 +137,68 @@ git commit --no-verify -m "message"
 
 ---
 
+## 7. SFTP File Upload Fails with 405 (CRITICAL)
+
+**Symptom:** Uploading a file through the file manager (drag-and-drop or the Upload button) fails immediately with `Upload failed: ApiError: Request failed with status code 405`. Folder uploads show the progress toast but no files arrive. Downloads, browsing, and terminal sessions all work normally.
+
+**Root Cause:** The plugin API proxy (`createPluginApi` in `src/ui/lib/plugin-transport.ts`) rewrites request URLs to include the `/plugin-api/<pluginId>` prefix — but only for a hardcoded method list:
+
+```ts
+property === "get" || property === "delete" || property === "head" ||
+property === "options" || property === "post" || property === "put" || property === "patch"
+```
+
+`uploadSSHFile()` uses **`postForm()`** for files under 1.5 GiB (`plugins/file-manager/src/frontend/api/ssh-file-operations-api.ts:435`). Because `postForm` is not in the list, the proxy falls through to `value.bind(target)` and calls the raw axios method — so the request went to:
+
+```
+POST /uploadFileStream                     ← wrong (405 Method Not Allowed)
+POST /plugin-api/file-manager/uploadFileStream   ← correct
+```
+
+Chunked uploads (files ≥ 1.5 GiB) use `post()`, which **is** in the list, which is why only small files failed.
+
+**Fix:** Added `postForm` to the proxy method list.
+
+```diff
+  property === "post" ||
++ property === "postForm" ||
+  property === "put" ||
+```
+
+**Evidence:** Captured the request URL in the browser (instrumented `XMLHttpRequest.prototype.open`) — it showed `https://termix.tirallab.page/uploadFileStream` with status 405. After the fix the same upload logged `Streaming file upload completed` and `readFile` returned the exact uploaded content on the remote host.
+
+**Lesson:** Any axios method not in that list silently loses the plugin prefix. When adding a new plugin API call, check the method name against the proxy list.
+
+---
+
+## 8. `deleteItem` Crashes the Plugin on a Missing Body (CRITICAL)
+
+**Symptom:** The file-manager plugin returns `503 {"error":"This feature is not available"}` for every request, and `/plugins` shows `state: "loaded"`, `enabled: false`.
+
+**Root Cause:** `app.delete("/deleteItem")` in `plugins/file-manager/src/backend/operation-routes.ts:488` destructures `req.body` without a guard:
+
+```ts
+const { sessionId, path: itemPath, isDirectory, permanent } = req.body;
+```
+
+A `DELETE` request with no body (or one the JSON parser skipped) leaves `req.body` undefined, so the destructure throws. The plugin loader counts runtime errors and **tears the plugin down after 5 failures inside 60 s**:
+
+```
+Plugin file-manager failed 5 times in 60000ms and has been stopped
+```
+
+The plugin then stays disabled until retried.
+
+**Fix / Recovery:** Re-activate it through the admin endpoint:
+
+```
+POST /plugins/file-manager/retry     →  {"id":"file-manager","state":"active"}
+```
+
+**Lesson:** Always send the JSON body the route expects (`sessionId`, `path`, `isDirectory`, `permanent`). A plugin that throws on every call is stopped by design — one malformed request can take the whole feature offline.
+
+---
+
 ## Summary Table
 
 | # | Bug | Severity | Root Cause | Fix |
@@ -147,6 +209,8 @@ git commit --no-verify -m "message"
 | 4 | Duplicate share button | MEDIUM | Plugin already contributes same slot | Filter by `actionId` |
 | 5 | Pre-commit stages backups | MEDIUM | `git add -A` includes untracked dirs | Stage specific files |
 | 6 | CSS regression from bad deploy | CRITICAL | Stale backup CSS overwrote current | Revert + clean rebuild |
+| 7 | SFTP upload 405 | CRITICAL | `postForm` missing from plugin API proxy | Add `postForm` to the proxy list |
+| 8 | Plugin stopped by body-less DELETE | CRITICAL | Unguarded `req.body` destructure | `POST /plugins/{id}/retry` |
 
 ---
 
