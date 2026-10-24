@@ -494,8 +494,8 @@ export function TabBar({
                 ${index === 0 && tab.type !== "dashboard" ? "border-l border-border" : ""}
                 ${
                   tab.type === "dashboard"
-                    ? `px-2.5 md:px-3.5 ${active ? "bg-surface text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-surface"}`
-                    : `px-2.5 md:px-4 font-medium ${active ? "bg-surface text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-surface"}`
+                    ? `px-2.5 md:px-3.5 ${active ? "bg-card bg-accent-brand/5 text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-surface"}`
+                    : `px-2.5 md:px-4 font-medium ${active ? "bg-card bg-accent-brand/5 text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-surface"}`
                 }`}
               >
                 {showTabNumbers && tab.type !== "dashboard" && (
