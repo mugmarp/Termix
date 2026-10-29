@@ -660,12 +660,19 @@ export function TabBar({
                 >
                   {tabIcon(tab.type)}
                   {tab.type !== "dashboard" && (
-                    <>
-                      {tab.host?.name}
-                      <span className="ml-1.5 text-[10px] text-muted-foreground">
+                    <div className="flex flex-col justify-center min-w-0 leading-tight">
+                      <span
+                        className="truncate text-sm"
+                        style={{ fontWeight: "inherit" }}
+                      >
+                        {tab.host?.name}
+                      </span>
+                      <span
+                        className="truncate text-xs text-muted-foreground"
+                      >
                         {tab.customLabel || tab.defaultTabLabel || tab.label}
                       </span>
-                    </>
+                    </div>
                   )}
                 </div>
               );
