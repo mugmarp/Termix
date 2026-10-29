@@ -557,7 +557,7 @@ export function TabBar({
                       </span>
                       <span
                         className="truncate text-xs text-muted-foreground"
-                        title={tab.customLabel || tab.defaultTabLabel || tab.label}
+                        title={tab.host?.name + " — " + (tab.customLabel || tab.defaultTabLabel || tab.label)}
                       >
                         {tab.customLabel || tab.defaultTabLabel || tab.label}
                       </span>
@@ -659,7 +659,14 @@ export function TabBar({
                 }`}
                 >
                   {tabIcon(tab.type)}
-                  {tab.type !== "dashboard" && tab.label}
+                  {tab.type !== "dashboard" && (
+                    <>
+                      {tab.host?.name}
+                      <span className="ml-1.5 text-[10px] text-muted-foreground">
+                        {tab.customLabel || tab.defaultTabLabel || tab.label}
+                      </span>
+                    </>
+                  )}
                 </div>
               );
             })()}
