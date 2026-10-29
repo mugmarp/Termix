@@ -834,8 +834,8 @@ export function TabBar({
               className="bg-popover border border-border shadow-lg py-1 min-w-[200px] max-w-[260px] overflow-y-auto"
             >
               <div className="px-2 py-1 text-xs font-semibold text-muted-foreground truncate max-w-[200px]">
-                {ctxTab.label}
-              </div>
+              {ctxTab.host?.name} — {ctxTab.customLabel || ctxTab.defaultTabLabel || ctxTab.label}
+            </div>
               <div className="h-px bg-border my-1" />
               {isConnectionTab(ctxTab.type) && (
                 <button
