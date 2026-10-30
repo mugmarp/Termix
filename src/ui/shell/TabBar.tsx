@@ -716,7 +716,7 @@ export function TabBar({
                     <span className="truncate">
                       {tab.type === "dashboard"
                         ? t("nav.dashboard")
-                        : tab.label}
+                        : tab.host?.name + " — " + (tab.customLabel || tab.defaultTabLabel || tab.label)}
                     </span>
                   </div>
                   {tab.type !== "dashboard" && (

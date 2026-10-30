@@ -151,7 +151,7 @@ export function EmptyPanePicker({
                   <span className="shrink-0 text-muted-foreground">
                     {tabIcon(tab.type)}
                   </span>
-                  <span className="truncate">{tab.label}</span>
+                  <span className="truncate">{tab.host?.name} — {tab.customLabel || tab.defaultTabLabel || tab.label}</span>
                 </button>
               ))}
             </div>
