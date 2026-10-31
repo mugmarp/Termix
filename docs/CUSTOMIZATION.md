@@ -108,8 +108,10 @@ When enabled, sessions expire after a period of inactivity (no mouse/keyboard ac
 
 | Unit | Min | Max |
 |---|---|---|
-| Minutes (default) | 0.5 min | 60 min |
+| Minutes (default) | 30 min | 60 min |
 | Seconds | 30 sec | 3600 sec |
+
+**Default: OFF** (disabled by default). The 30-minute session timeout handles inactive sessions.
 
 ### How It Works
 - **Toggle:** "Enable Idle Timeout" — off by default
@@ -128,6 +130,84 @@ When enabled, sessions expire after a period of inactivity (no mouse/keyboard ac
 | `src/backend/database/routes/user-settings-routes.ts` | `GET /users/idle-timeout` and `PATCH /users/idle-timeout` routes with validation |
 | `src/backend/auth/session-issuer.ts` | `getIdleTimeoutMs()` reads `idle_timeout_enabled` and `idle_timeout_minutes`; `sessionCookieMaxAge` uses idle timeout when enabled |
 | `src/ui/locales/en.json` | New i18n strings for labels and validation messages |
+
+---
+
+## 6. Session Timeout Defaults (30 Min Default)
+
+### What
+Session timeout now defaults to **30 minutes** (0.5 hours) instead of 24 hours, when "Remember me for 30 days" is NOT checked.
+
+### Changes
+- Default session timeout: 24 hours → 0.5 hours (30 minutes)
+- Default unit: hours → minutes
+- Idle timeout: disabled by default (off by default)
+- Idle timeout default value: 0.5 min → 30 min (when enabled)
+- Default unit: hours → minutes
+- All settings persist to localStorage for fresh devices
+
+### Files Changed
+| File | Change |
+|---|---|
+| `src/ui/sidebar/AdminSettingsPanel.tsx` | Default values, localStorage persistence for all settings |
+
+---
+
+## 6. User Registration Default (Off by Default)
+
+### What
+User self-registration (OIDC/SSO auto-provisioning) is now **disabled by default**. Admins must explicitly enable it.
+
+### How It Works
+- Setting: `oidc_auto_provision` (boolean, default `false`)
+- Environment variable fallback: `OIDC_ALLOW_REGISTRATION=true`
+- When disabled: External users cannot sign up, only existing users can sign in
+- First user is always allowed (bootstrap)
+
+### Files Changed
+| File | Change |
+|---|---|
+| `src/ui/sidebar/AdminSettingsPanel.tsx` | `allowRegistration` default `false`, localStorage persistence |
+| `src/backend/auth/provisioning.ts` | `isExternalProvisioningAllowed()` reads `oidc_auto_provision` setting |
+
+---
+
+## 6. Session Timeout Defaults (30 Min Default)
+
+### What
+Session timeout now defaults to **30 minutes** (0.5 hours) instead of 24 hours, when "Remember me for 30 days" is NOT checked.
+
+### Changes
+- Default session timeout: 24 hours → 0.5 hours (30 minutes)
+- Default unit: hours → minutes
+- Idle timeout: disabled by default (off by default)
+- Idle timeout default value: 0.5 min → 30 min (when enabled)
+- Default unit: hours → minutes
+- All settings now persist to localStorage for fresh devices
+
+### Files Changed
+| File | Change |
+|---|---|
+| `src/ui/sidebar/AdminSettingsPanel.tsx` | Default values, localStorage persistence for all settings |
+
+---
+
+## 7. User Registration Default (Off by Default)
+
+### What
+User self-registration (OIDC/SSO auto-provisioning) is now **disabled by default**. Admins must explicitly enable it.
+
+### How It Works
+- Setting: `oidc_auto_provision` (boolean, default `false`)
+- Environment variable fallback: `OIDC_ALLOW_REGISTRATION=true`
+- When disabled: External users cannot sign up, only existing users can sign in
+- First user is always allowed (bootstrap)
+
+### Files Changed
+| File | Change |
+|---|---|
+| `src/ui/sidebar/AdminSettingsPanel.tsx` | `allowRegistration` default `false`, localStorage persistence |
+| `src/backend/auth/provisioning.ts` | `isExternalProvisioningAllowed()` reads `oidc_auto_provision` setting |
 
 ---
 
