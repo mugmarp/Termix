@@ -5,7 +5,7 @@
     "packages/*",
     "plugins/*"
   ],
-  "version": "2.9.2",
+  "version": "2.9.2-custom-1793447174",
   "description": "Self-hosted SSH and remote desktop management.",
   "author": "Karmaa",
   "main": "electron/main.cjs",
