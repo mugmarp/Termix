@@ -67,7 +67,9 @@ interface PaneContext {
 const DRAG_THRESHOLD = 5;
 
 function tabLabel(tab: Tab): string {
-  return tab.customLabel || tab.label;
+  return tab.host?.name
+    ? tab.host?.name + " — " + (tab.customLabel || tab.defaultTabLabel || tab.label)
+    : tab.customLabel || tab.label;
 }
 
 function PaneHeader({
