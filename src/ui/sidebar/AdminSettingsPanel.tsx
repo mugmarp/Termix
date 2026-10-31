@@ -113,16 +113,18 @@ export function AdminSettingsPanel({
   >(() => new Set(["general"]));
   const featureSettings = useFeatureSettings("admin");
   const [manageUser, setManageUser] = useState<AdminUser | null>(null);
-  const [allowRegistration, setAllowRegistration] = useState(true);
+  const [allowRegistration, setAllowRegistration] = useState(
+    () => localStorage.getItem("termix_allow_registration") === "true"
+  );
   const [allowPasswordLogin, setAllowPasswordLogin] = useState(true);
   const [passwordLoginForced, setPasswordLoginForced] = useState(false);
   const [allowPasswordReset, setAllowPasswordReset] = useState(true);
-  const [sessionTimeout, setSessionTimeout] = useState("24");
+  const [sessionTimeout, setSessionTimeout] = useState("0.5");
   const [sessionTimeoutUnit, setSessionTimeoutUnit] = useState<"hours" | "minutes">(
-    () => (localStorage.getItem("termix_session_timeout_unit") as "hours" | "minutes") || "hours"
+    () => (localStorage.getItem("termix_session_timeout_unit") as "hours" | "minutes") || "minutes"
   );
   const [idleTimeoutEnabled, setIdleTimeoutEnabled] = useState(false);
-  const [idleTimeoutValue, setIdleTimeoutValue] = useState("0.5");
+  const [idleTimeoutValue, setIdleTimeoutValue] = useState("30");
   const [idleTimeoutUnit, setIdleTimeoutUnit] = useState<"minutes" | "seconds">(
     () => (localStorage.getItem("termix_idle_timeout_unit") as "minutes" | "seconds") || "minutes"
   );
@@ -135,7 +137,21 @@ export function AdminSettingsPanel({
   useEffect(() => {
     localStorage.setItem("termix_idle_timeout_unit", idleTimeoutUnit);
   }, [idleTimeoutUnit]);
-  const [statusInterval, setStatusInterval] = useState("30");
+
+  useEffect(() => {
+    localStorage.setItem("termix_session_timeout", sessionTimeout);
+  }, [sessionTimeout]);
+
+  useEffect(() => {
+    localStorage.setItem("termix_idle_timeout_enabled", String(idleTimeoutEnabled));
+  }, [idleTimeoutEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem("termix_idle_timeout_value", idleTimeoutValue);
+  }, [idleTimeoutValue]);
+  useEffect(() => {
+    localStorage.setItem("termix_allow_registration", String(allowRegistration));
+  }, [allowRegistration]);
   const [logLevel, setLogLevel] = useState("info");
   const [notificationPrivateEndpoints, setNotificationPrivateEndpoints] =
     useState<string[]>([]);
