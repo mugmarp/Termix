@@ -152,6 +152,7 @@ export function AdminSettingsPanel({
   useEffect(() => {
     localStorage.setItem("termix_allow_registration", String(allowRegistration));
   }, [allowRegistration]);
+  const [statusInterval, setStatusInterval] = useState("30");
   const [logLevel, setLogLevel] = useState("info");
   const [notificationPrivateEndpoints, setNotificationPrivateEndpoints] =
     useState<string[]>([]);
