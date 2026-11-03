@@ -2360,6 +2360,7 @@ async function transferSingleFile(
   move: boolean,
   reconnectMeta: TransferReconnectMeta,
   requestedParallelSegments?: number,
+  methodPreference: "auto" | "item_sftp" | "tar" | "stream" = "auto",
 ): Promise<TransferProgress> {
   const sourceSftp = await deps.getSessionSftp(sourceSession);
   const destSftp = await deps.getSessionSftp(destSession);
@@ -2374,6 +2375,27 @@ async function transferSingleFile(
   const stats = await promisifySftpStat(sourceSftp, sourcePath);
   if (!stats.isFile()) {
     throw new Error(`Source is not a regular file: ${sourcePath}`);
+  }
+
+  // Use item_sftp when explicitly requested
+  const useItemSftp = methodPreference === "item_sftp";
+
+  if (useItemSftp) {
+    // Use the item_sftp path for single file
+    const platform = await detectTransferPlatform(deps, destSession, [
+      destPath,
+    ]);
+    return transferViaItemSftp(
+      deps,
+      transferId,
+      sourceSession,
+      destSession,
+      [sourcePath],
+      destPath,
+      move,
+      platform,
+      reconnectMeta,
+    );
   }
 
   updateTransfer(transferId, {
@@ -2924,6 +2946,7 @@ async function runTransfer(
         move,
         reconnectMeta,
         parallelSegmentCount,
+        methodPreference,
       );
     } else {
       const prepareStart = Date.now();
