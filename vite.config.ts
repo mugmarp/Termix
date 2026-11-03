@@ -105,6 +105,15 @@ export default defineConfig({
   build: {
     sourcemap: false,
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+        // Force include plugin-host/loader to prevent tree-shaking
+        "plugin-host": path.resolve(__dirname, "src/ui/plugin-host/loader.ts"),
+      },
+      // Prevent tree-shaking of plugin-host/loader which has side effects
+      treeshake: {
+        moduleSideEffects: (id) => id.includes("plugin-host"),
+      },
       output: {
         manualChunks: getManualChunk,
       },

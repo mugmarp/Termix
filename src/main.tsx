@@ -170,18 +170,28 @@ function App() {
             // Non-fatal: WebSocket connections will fall back to cookie auth
           }
         }
+        console.log("[main] Starting plugin runtime");
         setPhase("loading-app");
         await Promise.all([
           startPluginRuntime()
-            .catch(() => {})
-            .then(() => settledPromise()),
+            .catch((e) => {
+              console.error("[main] startPluginRuntime failed:", e);
+            })
+            .then(() => {
+              console.log(
+                "[main] startPluginRuntime done, waiting for settledPromise",
+              );
+              return settledPromise();
+            }),
           preloadPermissions(),
           getUserPreferences().catch(() => undefined),
         ]);
+        console.log("[main] All promises resolved, fading in");
         setPhase("fading-in");
         timerRef.current = setTimeout(() => setPhase("idle-app"), 450);
       })
       .catch((err: unknown) => {
+        console.error("[main] Error in verification:", err);
         // Only treat a genuine auth rejection (401/403) as "not logged in".
         // Anything else (network hiccup, backend still starting up, a
         // transient 5xx) is not proof the session is invalid -- clearing

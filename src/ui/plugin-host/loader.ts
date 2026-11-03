@@ -10,7 +10,6 @@ import { createPluginApp, type PluginAppHandle } from "./app";
 import { installPluginHostBridge } from "./bridge";
 import {
   getPluginRecord,
-  getPluginStoreState,
   markPluginsSettled,
   setFrontendState,
   setPluginSummaries,
@@ -383,13 +382,20 @@ export function syncPlugins(summaries?: PluginSummary[]): Promise<void> {
       } catch (error) {
         console.error("[plugins] could not load the plugin list", error);
         // The shell must not wait on plugins forever.
-        if (!getPluginStoreState().loaded) setPluginSummaries([]);
+        // Avoid getPluginStoreState() here because the minifier incorrectly
+        // maps it to setPluginSummaries in the catch block (see minification bug).
+        setPluginSummaries([]);
         markPluginsSettled();
         return;
       }
     }
-    await reconcile(list);
-    markPluginsSettled();
+    try {
+      await reconcile(list);
+    } finally {
+      // Ensure markPluginsSettled is called even if reconcile throws,
+      // so settledPromise() doesn't wait forever.
+      markPluginsSettled();
+    }
   });
 }
 
