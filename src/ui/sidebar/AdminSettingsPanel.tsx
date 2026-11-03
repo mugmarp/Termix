@@ -114,19 +114,25 @@ export function AdminSettingsPanel({
   const featureSettings = useFeatureSettings("admin");
   const [manageUser, setManageUser] = useState<AdminUser | null>(null);
   const [allowRegistration, setAllowRegistration] = useState(
-    () => localStorage.getItem("termix_allow_registration") === "true"
+    () => localStorage.getItem("termix_allow_registration") === "true",
   );
   const [allowPasswordLogin, setAllowPasswordLogin] = useState(true);
   const [passwordLoginForced, setPasswordLoginForced] = useState(false);
   const [allowPasswordReset, setAllowPasswordReset] = useState(true);
   const [sessionTimeout, setSessionTimeout] = useState("0.5");
-  const [sessionTimeoutUnit, setSessionTimeoutUnit] = useState<"hours" | "minutes">(
-    () => (localStorage.getItem("termix_session_timeout_unit") as "hours" | "minutes") || "minutes"
+  const [sessionTimeoutUnit, setSessionTimeoutUnit] = useState<
+    "hours" | "minutes"
+  >(
+    () =>
+      (localStorage.getItem("termix_session_timeout_unit") as
+        "hours" | "minutes") || "minutes",
   );
   const [idleTimeoutEnabled, setIdleTimeoutEnabled] = useState(false);
   const [idleTimeoutValue, setIdleTimeoutValue] = useState("30");
   const [idleTimeoutUnit, setIdleTimeoutUnit] = useState<"minutes" | "seconds">(
-    () => (localStorage.getItem("termix_idle_timeout_unit") as "minutes" | "seconds") || "minutes"
+    () =>
+      (localStorage.getItem("termix_idle_timeout_unit") as
+        "minutes" | "seconds") || "minutes",
   );
 
   // Persist unit selectors to localStorage so they survive refresh and fresh devices
@@ -143,16 +149,21 @@ export function AdminSettingsPanel({
   }, [sessionTimeout]);
 
   useEffect(() => {
-    localStorage.setItem("termix_idle_timeout_enabled", String(idleTimeoutEnabled));
+    localStorage.setItem(
+      "termix_idle_timeout_enabled",
+      String(idleTimeoutEnabled),
+    );
   }, [idleTimeoutEnabled]);
 
   useEffect(() => {
     localStorage.setItem("termix_idle_timeout_value", idleTimeoutValue);
   }, [idleTimeoutValue]);
   useEffect(() => {
-    localStorage.setItem("termix_allow_registration", String(allowRegistration));
+    localStorage.setItem(
+      "termix_allow_registration",
+      String(allowRegistration),
+    );
   }, [allowRegistration]);
-  const [statusInterval, setStatusInterval] = useState("30");
   const [logLevel, setLogLevel] = useState("info");
   const [notificationPrivateEndpoints, setNotificationPrivateEndpoints] =
     useState<string[]>([]);
@@ -351,7 +362,7 @@ export function AdminSettingsPanel({
         const hours = timeout.value.timeoutHours;
         // Convert to minutes if that's the selected unit
         setSessionTimeout(
-          sessionTimeoutUnit === "minutes" ? String(hours * 60) : String(hours)
+          sessionTimeoutUnit === "minutes" ? String(hours * 60) : String(hours),
         );
       }
       if (idleTimeout.status === "fulfilled") {
@@ -361,7 +372,7 @@ export function AdminSettingsPanel({
           setIdleTimeoutValue(
             idleTimeoutUnit === "seconds"
               ? String(idleTimeout.value.idleTimeoutMinutes * 60)
-              : String(idleTimeout.value.idleTimeoutMinutes)
+              : String(idleTimeout.value.idleTimeoutMinutes),
           );
         }
       }
@@ -515,7 +526,9 @@ export function AdminSettingsPanel({
       }
     }
     try {
-      await updateSessionTimeout(sessionTimeoutUnit === "hours" ? value : value / 60);
+      await updateSessionTimeout(
+        sessionTimeoutUnit === "hours" ? value : value / 60,
+      );
       toast.success(t("admin.sessionTimeoutSaved"));
     } catch {
       toast.error(t("admin.sessionTimeoutSaveFailed"));
@@ -540,7 +553,9 @@ export function AdminSettingsPanel({
       }
     }
     try {
-      await updateIdleTimeout(idleTimeoutUnit === "minutes" ? value : value / 60);
+      await updateIdleTimeout(
+        idleTimeoutUnit === "minutes" ? value : value / 60,
+      );
       toast.success(t("admin.idleTimeoutSaved"));
     } catch {
       toast.error(t("admin.idleTimeoutSaveFailed"));

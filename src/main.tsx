@@ -331,18 +331,7 @@ function App() {
             pointerEvents: phase === "idle-app" ? "auto" : "none",
           }}
         >
-          <Suspense
-            fallback={
-              <div className="fixed inset-0 flex items-center justify-center bg-background">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  <p className="text-sm text-muted-foreground">
-                    {t("common.loading")}
-                  </p>
-                </div>
-              </div>
-            }
-          >
+          <Suspense fallback={null}>
             <UiPreferencesProvider>
               <AppShell username={authUsername} onLogout={handleLogout} />
             </UiPreferencesProvider>

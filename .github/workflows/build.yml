@@ -2,9 +2,9 @@ name: Build Termix
 
 on:
   push:
-    branches: [ "main", "deploy/termix-tirallab" ]
+    branches: [ "main", "connection-status-indicator" ]
   pull_request:
-    branches: [ "main", "deploy/termix-tirallab" ]
+    branches: [ "main", "connection-status-indicator" ]
   workflow_dispatch:
 
 jobs:
